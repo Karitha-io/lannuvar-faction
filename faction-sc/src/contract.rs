@@ -5,6 +5,7 @@ elrond_wasm::derive_imports!();
 
 pub mod staking_interactor;
 
+use crate::staking_interactor::GENESIS_NFT_ID;
 pub const FACTION_NFT_ID: &[u8] = b"ROKFACTION-4a5232";
 
 #[elrond_wasm::contract]
@@ -19,6 +20,18 @@ pub trait FactionContract: crate::staking_interactor::StakingIntModule {
             &to,
             &TokenIdentifier::from_esdt_bytes(FACTION_NFT_ID),
             card_nonce,
+            &BigUint::from(1u64),
+            &[],
+        )
+    }
+
+    #[only_owner]
+    #[endpoint(withdrawGenesisTo)]
+    fn withdraw_genesis_to(&self, to: ManagedAddress, genesis_nonce: u64) {
+        self.send().direct(
+            &to,
+            &TokenIdentifier::from_esdt_bytes(GENESIS_NFT_ID),
+            genesis_nonce,
             &BigUint::from(1u64),
             &[],
         )

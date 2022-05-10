@@ -32,39 +32,37 @@ pub trait StakingIntModule {
 
     #[only_owner]
     #[endpoint(stakeGenesisNft)]
-    fn stake_genesis_nft(&self, nonce: u64) {
+    fn stake_genesis_nft(&self, #[var_args] nonces: MultiValueEncoded<u16>) {
         let bussiness_token_id = TokenIdentifier::from_esdt_bytes(GENESIS_NFT_ID);
 
-        let balance = self.blockchain().get_sc_balance(&bussiness_token_id, nonce);
-        require!(balance == BigUint::from(1u64), "no nft to send");
+        let mut payments = ManagedVec::new();
+        nonces.into_iter().for_each(|x| {
+            payments.push(EsdtTokenPayment::new(
+                bussiness_token_id.clone(),
+                x as u64,
+                BigUint::from(1u64),
+            ))
+        });
 
         self.staking_poxy(self.staking_address().get())
             .stake_nft()
-            .add_token_transfer(bussiness_token_id, nonce, balance)
+            .with_multi_token_transfer(payments)
             .execute_on_dest_context_ignore_result();
     }
 
     #[only_owner]
     #[endpoint(unstakeGenesisNft)]
-    fn unstake_genesis_nft(&self, nonce: u16) {
-        let bussiness_token_id = TokenIdentifier::from_esdt_bytes(GENESIS_NFT_ID);
-
+    fn unstake_genesis_nft(&self, #[var_args] nonces: MultiValueEncoded<u16>) {
         self.staking_poxy(self.staking_address().get())
-            .unstake_nft(MultiValueEncoded::from(ManagedVec::from_single_item(nonce)))
+            .unstake_nft(nonces)
             .execute_on_dest_context_ignore_result();
-
-        let balance = self
-            .blockchain()
-            .get_sc_balance(&bussiness_token_id, nonce as u64);
-
-        require!(balance == BigUint::from(1u64), "did not receive nft");
     }
 
     #[only_owner]
     #[endpoint(claimRewardsGenesis)]
-    fn claim_rewards_genesis(&self, nonce: u16) {
+    fn claim_rewards_genesis(&self, #[var_args] nonces: MultiValueEncoded<u16>) {
         self.staking_poxy(self.staking_address().get())
-            .claim_rewards(MultiValueEncoded::from(ManagedVec::from_single_item(nonce)))
+            .claim_rewards(nonces)
             .execute_on_dest_context_ignore_result();
     }
 
