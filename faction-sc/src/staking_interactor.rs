@@ -64,7 +64,7 @@ pub trait StakingIntModule {
     #[endpoint(claimRewardsGenesis)]
     fn claim_rewards_genesis(&self, nonce: u16) {
         self.staking_poxy(self.staking_address().get())
-            .unstake_nft(MultiValueEncoded::from(ManagedVec::from_single_item(nonce)))
+            .claim_rewards(MultiValueEncoded::from(ManagedVec::from_single_item(nonce)))
             .execute_on_dest_context_ignore_result();
     }
 
