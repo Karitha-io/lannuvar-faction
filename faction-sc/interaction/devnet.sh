@@ -49,6 +49,19 @@ withdrawCardTo() {
 }
 
 # $1 = address to withdraw to
+# $2 = genesis nonce
+withdrawGenesisTo() {
+    erdpy --verbose contract call ${CONTRACT_ADDRESS} \
+        --pem=${MY_WALLET_PEM} \
+        --recall-nonce \
+        --gas-limit 10000000 \
+        --function "withdrawGenesisTo" \
+        --arguments $1 $2 \
+        --proxy=${PROXY} --chain=${CHAIN_ID} \
+        --send || return
+}
+
+# $1 = address to withdraw to
 # $2 = amount to withdraw. can be blank
 withdrawEgldTo() {
     erdpy --verbose contract call ${CONTRACT_ADDRESS} \
