@@ -3,10 +3,12 @@
 elrond_wasm::imports!();
 elrond_wasm::derive_imports!();
 
+pub mod staking_interactor;
+
 pub const FACTION_NFT_ID: &[u8] = b"ROKFACTION-4a5232";
 
 #[elrond_wasm::contract]
-pub trait FactionContract {
+pub trait FactionContract: crate::staking_interactor::StakingIntModule {
     #[init]
     fn init(&self) {}
 
