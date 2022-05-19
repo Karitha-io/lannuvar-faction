@@ -7,6 +7,7 @@ pub mod staking_interactor;
 
 use crate::staking_interactor::GENESIS_NFT_ID;
 pub const FACTION_NFT_ID: &[u8] = b"ROKFACTION-4a5232";
+pub const REALM_ESDT_ID: &[u8] = b"REALM-8ead17";
 
 #[elrond_wasm::contract]
 pub trait FactionContract: crate::staking_interactor::StakingIntModule {
@@ -46,6 +47,18 @@ pub trait FactionContract: crate::staking_interactor::StakingIntModule {
         });
 
         self.send().direct_egld(&to, &amount, &[]);
+    }
+
+    #[only_owner]
+    #[endpoint(withdrawRealmTo)]
+    fn withdraw_realm_to(&self, to: ManagedAddress, #[var_args] amount: OptionalValue<BigUint>) {
+        let realm_esdt_id = TokenIdentifier::from_esdt_bytes(REALM_ESDT_ID);
+
+        let amount = amount
+            .into_option()
+            .unwrap_or_else(|| self.blockchain().get_sc_balance(&realm_esdt_id, 0));
+
+        self.send().direct(&to, &realm_esdt_id, 0, &amount, &[]);
     }
 
     #[only_owner]
